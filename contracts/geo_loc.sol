@@ -1,33 +1,18 @@
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.4.22 <0.9.0;
+#The code is based from this example here:http://blockchain/readme.md at master · Azure-Samples/blockchain (github.com)
 
+
+pragma solidity >=0.4.25 <0.6.0;
 
 contract geo_loc
 {
     //Set of States
     enum StateType { Created, InTransit, Completed, OutOfCompliance}
-    enum SensorType { None, Humidity, Temperature }
+    enum SensorType { None, latitude, longitude }
 
     //List of properties
-    StateType public  State;
-    address public  Owner;
-    address public  InitiatingCounterparty;
-    address public  Counterparty;
-    address public  PreviousCounterparty;
-    address public  Device;
-    address public  SupplyChainOwner;
-    address public  SupplyChainObserver;
-    int public  MinHumidity;
-    int public  MaxHumidity;
-    int public  MinTemperature;
-    int public  MaxTemperature;
-    SensorType public  ComplianceSensorType;
-    int public  ComplianceSensorReading;
-    bool public  ComplianceStatus;
-    string public  ComplianceDetail;
-    int public  LastSensorUpdateTimestamp;
+   
 
-    constructor(address device, address supplyChainOwner, address supplyChainObserver, int minHumidity, int maxHumidity, int minTemperature, int maxTemperature) public
+    constructor(address device, address Employee, address Employer, int MinLatitude, int MaxLatitude, int MinLongitude, int MaxLongitude) public
     {
         ComplianceStatus = true;
         ComplianceSensorReading = -1;
@@ -35,17 +20,17 @@ contract geo_loc
         Owner = InitiatingCounterparty;
         Counterparty = InitiatingCounterparty;
         Device = device;
-        SupplyChainOwner = supplyChainOwner;
-        SupplyChainObserver = supplyChainObserver;
-        MinHumidity = minHumidity;
-        MaxHumidity = maxHumidity;
-        MinTemperature = minTemperature;
-        MaxTemperature = maxTemperature;
+        Employee = Employee;
+        Employer = Employer;
+        MinLatitude = MinLatitude;
+        MaxLatitude = MaxLatitude;
+        MinLongitude = MinLongitude;
+        MaxLongitude = MaxLongitude;
         State = StateType.Created;
         ComplianceDetail = "N/A";
     }
 
-    function IngestTelemetry(int humidity, int temperature, int timestamp) public
+    function IngestTelemetry(int latitude, int longitude, int timestamp) public
     {
         // Separately check for states and sender 
         // to avoid not checking for state when the sender is the device
@@ -67,18 +52,18 @@ contract geo_loc
 
         LastSensorUpdateTimestamp = timestamp;
 
-        if (humidity > MaxHumidity || humidity < MinHumidity)
+        if (latitude > MaxLatitude || latitude < MinLatitude)
         {
-            ComplianceSensorType = SensorType.Humidity;
-            ComplianceSensorReading = humidity;
-            ComplianceDetail = "Humidity value out of range.";
+            ComplianceSensorType = SensorType.latitude;
+            ComplianceSensorReading = latitude;
+            ComplianceDetail = "latitude value out of range.";
             ComplianceStatus = false;
         }
-        else if (temperature > MaxTemperature || temperature < MinTemperature)
+        else if (longitude > MaxLongitude || longitude < MinLongitude)
         {
-            ComplianceSensorType = SensorType.Temperature;
-            ComplianceSensorReading = temperature;
-            ComplianceDetail = "Temperature value out of range.";
+            ComplianceSensorType = SensorType.longitude;
+            ComplianceSensorReading = longitude;
+            ComplianceDetail = "longitude value out of range.";
             ComplianceStatus = false;
         }
 
@@ -135,7 +120,7 @@ contract geo_loc
             revert();
         }
 
-        if (Owner != msg.sender && SupplyChainOwner != msg.sender)
+        if (Owner != msg.sender && Employee != msg.sender)
         {
             revert();
         }
